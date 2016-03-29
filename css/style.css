@@ -1,7 +1,6 @@
-.countries {
-    fill: #FFF;
-    stroke: #CCC;
-    stroke-width: 2px;
+.counties {
+    stroke: #fff;
+    stroke-width: .25px;
 }
 
 .map {

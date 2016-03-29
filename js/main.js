@@ -21,7 +21,7 @@ function setMap(){
     //create Albers equal area conic projection for the United States
     var projection = d3.geo.albers()
         .rotate([96, 0])
-        .center([0, 38.7])
+        .center([-.6, 38.7])
         .parallels([29.5, 45.5])
         .scale(1070)
         .translate([width / 2, height / 2])
@@ -36,18 +36,15 @@ function setMap(){
         .await(callback);
 
     function callback(error, csvData, us){
-        // //translate the Counties topojson
-        // var usCounties = topojson.feature(us, us.objects.Counties);
-        //
-        // //add out usCounties to the map
-        // var counties = map.append("path")
-        //   .datum(usCounties)
-        //   .attr("class", "counties")
-        //   .attr("d", "path");
+        //translate the Counties topojson
+        var usCounties = topojson.feature(us, us.objects.Counties);
+        console.log(usCounties);
 
-            console.log(error);
-            console.log(csvData);
-            console.log(us);
+        //add out usCounties to the map
+        var counties = map.append("path")
+          .datum(usCounties)
+          .attr("class", "counties")
+          .attr("d", path);
     };
 };
 
