@@ -1,9 +1,6 @@
 //wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 
-//begin script when window loads
-window.onload = setMap();
-
 //variables for data join
 var attrArray = ["groceryStores", "supercenters", "convenienceStores", "lowAccess", "nocarAccess", "fastFood"];
 var expressed = attrArray[0]; //initial attribute
@@ -60,6 +57,9 @@ function setMap(){
 
         //add coordinated visualization to the map
         setChart(csvData, colorScale);
+
+        //call our dropdown menu in the callback function
+        createDropdown()
     };
 };
 
@@ -225,26 +225,27 @@ function setChart(csvData, colorScale){
         .attr("class", function(d){
             return "bar " + d.FIPS;
         })
-        .attr("width", chartInnerWidth / (csvData.length - 1))
-        .attr("x", function(d, i){
-            return i * (chartInnerWidth / csvData.length) + leftPadding;
-        })
-        .attr("height", function(d, i){
-            return 460 - yScale(parseFloat(d[expressed]));
-        })
-        .attr("y", function(d, i){
-            return yScale(parseFloat(d[expressed])) + topBottomPadding;
-        })
-        .style("fill", function(d){
-            return choropleth(d, colorScale);
-        });
+        .attr("width", chartInnerWidth / (csvData.length - 1));
+        //
+        // .attr("x", function(d, i){
+        //     return i * (chartInnerWidth / csvData.length) + leftPadding;
+        // })
+        // .attr("height", function(d, i){
+        //     return 460 - yScale(parseFloat(d[expressed]));
+        // })
+        // .attr("y", function(d, i){
+        //     return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        // })
+        // .style("fill", function(d){
+        //     return choropleth(d, colorScale);
+        // });
 
     //create a text element for the chart title
     var chartTitle = chart.append("text")
         .attr("x", 40)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Number of " + expressed[3] + " in Each County");
+        .text("Number of " + expressed + " in Each County");
 
     //create vertical axis generator
     var yAxis = d3.svg.axis()
@@ -265,6 +266,8 @@ function setChart(csvData, colorScale){
         .attr("transform", translate);
 };
 
+//begin script when window loads
+window.onload = setMap();
 
 function joinData(usCounties, csvData){
 
@@ -356,6 +359,66 @@ function makeColorScale(data){
     // colorScale.domain(domainArray);
     //
     // return colorScale;
+};
+
+//function to create a dropdown menu for attribute selection
+function createDropdown(){
+    //add select element
+    var dropdown = d3.select("body")
+        .append("select")
+        .attr("class", "dropdown")
+        .on("change", function(){
+            changeAttribute(this.value, csvData)
+        });
+
+    //add initial option
+    var titleOption = dropdown.append("option")
+        .attr("class", "titleOption")
+        .attr("disabled", "true")
+        .text("Select Attribute");
+
+    //add attribute name options
+    var attrOptions = dropdown.selectAll("attrOptions")
+        .data(attrArray)
+        .enter()
+        .append("option")
+        .attr("value", function(d){ return d })
+        .text(function(d){ return d });
+};
+
+//dropdown change listener handler
+function changeAttribute(attribute, csvData){
+    //change the expressed attribute
+    expressed = attribute;
+
+    //recreate the color scale
+    var colorScale = makeColorScale(csvData);
+
+    //recolor enumeration units
+    var regions = d3.selectAll(".regions")
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale)
+        });
+
+    //re-sort bars
+    var bars = d3.selectAll(".bar")
+        .sort(function(a, b){
+            return b[expressed] - a[expressed];
+        })
+        .attr("x", function(d, i){
+            return i * (chartInnerWidth / csvData.length) + leftPadding;
+        })
+        //resize bars
+        .attr("height", function(d, i){
+            return 463 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        })
+        //recolor bars
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        });
 };
 
 })();
