@@ -59,7 +59,7 @@ function setMap(){
         setChart(csvData, colorScale);
 
         //call our dropdown menu in the callback function
-        createDropdown()
+        createDropdown(csvData);
     };
 };
 
@@ -72,7 +72,7 @@ function setEnumerationUnits(usCounties, map, path, colorScale){
             .enter()
             .append("path")
             .attr("class", function(d){
-                return d.properties.GEOID;
+                return "counties " + d.properties.GEOID;
             })
             .attr("d", path)
             .style("fill", function(d) {
@@ -187,7 +187,7 @@ function choropleth(props, colorScale){
 function setChart(csvData, colorScale){
     //chart frame dimensions
     var chartWidth = window.innerWidth * 0.300,
-        chartHeight = 470,
+        chartHeight = 460,
         leftPadding = 20,
         rightPadding = .5,
         topBottomPadding = 5,
@@ -326,7 +326,6 @@ function makeColorScale(data){
     return colorScale;
 
 
-
     //build two-value array of minimum and maximum expressed attribute values
     // var minmax = [
     //   d3.min(data, function(d) { return parseFloat(d[expressed]); }),
@@ -337,8 +336,6 @@ function makeColorScale(data){
     // colorScale.domain(minmax);
     //
     // return colorScale;
-
-
 
     //build array of all values of the expressed attribute
     // var domainArray = [];
@@ -362,7 +359,7 @@ function makeColorScale(data){
 };
 
 //function to create a dropdown menu for attribute selection
-function createDropdown(){
+function createDropdown(csvData){
     //add select element
     var dropdown = d3.select("body")
         .append("select")
@@ -395,7 +392,9 @@ function changeAttribute(attribute, csvData){
     var colorScale = makeColorScale(csvData);
 
     //recolor enumeration units
-    var regions = d3.selectAll(".regions")
+    var counties = d3.selectAll(".counties")
+        .transition()
+        .duration(1000)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale)
         });
@@ -410,7 +409,7 @@ function changeAttribute(attribute, csvData){
         })
         //resize bars
         .attr("height", function(d, i){
-            return 463 - yScale(parseFloat(d[expressed]));
+            return 460 - yScale(parseFloat(d[expressed]));
         })
         .attr("y", function(d, i){
             return yScale(parseFloat(d[expressed])) + topBottomPadding;
