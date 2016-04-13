@@ -19,25 +19,6 @@ var chartWidth = window.innerWidth * 0.480,
 var yScale = d3.scale.linear()
     .range([475, 0])
     .domain([0, 3])
-    // .attr( function scales(expressed){
-    //   if (expressed = "Supercenters") {
-    //     return([0, 16]);
-    //   }
-    //   else if (expressed = "Convenience Stores") {
-    //     return([0, 0.33])
-    //   }
-    //   else if (expressed = "People with Low Access to Stores (%)") {
-    //     return([0, 0.07]);
-    //   }
-    //   else if (expressed = "People with No Car Access to Grocery Stores") {
-    //     return([0, 140]);
-    //   }
-    //   else if (expressed = "Fast Food Restaurants") {
-    //     return([0, 185]);
-    //   }
-    //   else {return([0, 16]);
-    //   }
-    // });
 
 //set up choropleth map
 function setMap(){
@@ -102,7 +83,6 @@ function setMap(){
 //function to make enumeration units for the us counties
 function setEnumerationUnits(usCounties, map, path, colorScale){
         //add out usCounties to the map
-        //add France regions to map
         var counties = map.selectAll(".counties")
             .data(usCounties)
             .enter()
@@ -295,6 +275,8 @@ function changeAttribute(attribute, csvData){
 
     //recolor enumeration units
     var counties = d3.selectAll(".counties")
+        .transition()
+        .duration(1000)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale)
         });
@@ -303,7 +285,13 @@ function changeAttribute(attribute, csvData){
     var bars = d3.selectAll(".bar")
         .sort(function(a, b){
             return b[expressed] - a[expressed];
-        });
+        })
+        .transition() //add animation
+        .delay(function(d, i){
+            return i * .6
+        })
+        .duration(500);
+
 
     updateChart(bars, csvData.length, colorScale);
 };
