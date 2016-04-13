@@ -2,11 +2,11 @@
 (function(){
 
 //variables for data join
-var attrArray = ["groceryStores", "supercenters", "convenienceStores", "lowAccess", "nocarAccess", "fastFood"];
-var expressed = attrArray[3]; //initial attribute
+var attrArray = ["Grocery Stores","Supercenters","Convenience Stores","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores","Fast Food Restaurants"];
+var expressed = attrArray[0]; //initial attribute
 
 //chart frame dimensions
-var chartWidth = window.innerWidth * 0.300,
+var chartWidth = window.innerWidth * 0.480,
     chartHeight = 473,
     leftPadding = 20,
     rightPadding = .5,
@@ -23,8 +23,8 @@ var yScale = d3.scale.linear()
 //set up choropleth map
 function setMap(){
     //map frame dimensions
-    var width = window.innerWidth * 0.650,
-        height = 500;
+    var width = window.innerWidth * 0.480,
+        height = 400;
 
     //create new svg container for the map
     var map = d3.select("body")
@@ -38,7 +38,7 @@ function setMap(){
         .rotate([96, 0])
         .center([-.6, 38.7])
         .parallels([29.5, 45.5])
-        .scale(1070)
+        .scale(770)
         .translate([width / 2, height / 2])
 
     var path = d3.geo.path()
@@ -86,14 +86,17 @@ function setEnumerationUnits(usCounties, map, path, colorScale){
             .data(usCounties)
             .enter()
             .append("path")
+            .attr("class", "counties")
             .attr("class", function(d){
-                return "counties " + d.properties.GEOID;
+                return "counties_" + d.properties.GEOID;
             })
             .attr("d", path)
             .style("fill", function(d) {
                 return choropleth(d.properties, colorScale);
             })
             .on("mouseover", function(d){
+              console.log(d)
+              console.log(this)
                 highlight(d.properties);
             })
             .on("mouseout", function(d){
@@ -116,97 +119,6 @@ function choropleth(props, colorScale){
         return "#CCC";
     };
 };
-
-// //function to create coordinated bar chart
-// function setChart(csvData, colorScale){
-//     //chart frame dimensions
-//     var chartWidth = window.innerWidth * 0.3,
-//         chartHeight = 473;
-//
-//     //create a second svg element to hold the bar chart
-//     var chart = d3.select("body")
-//         .append("svg")
-//         .attr("width", chartWidth)
-//         .attr("height", chartHeight)
-//         .attr("class", "chart");
-//
-//     var yScale = d3.scale.linear()
-//         .range([0, chartHeight])
-//         .domain([0, 105]);
-//
-//     //set bars for each province
-//     var bars = chart.selectAll(".bars")
-//         .data(csvData)
-//         .enter()
-//         .append("rect")
-//         .attr("class", function(a, b){
-//             return a[expressed]-b[expressed]
-//         })
-//         .attr("class", function(d){
-//             return "bars " + d.FIPS;
-//         })
-//         .attr("width", chartWidth / (csvData.length - 1))
-//         .attr("x", function(d, i){
-//             return i * (chartWidth / csvData.length);
-//         })
-//         .attr("height", function(d) {
-//             return yScale(parseFloat(d[expressed]));
-//         })
-//         .attr("y", function(d){
-//             return chartHeight - yScale(parseFloat(d[expressed]))
-//         })
-//         .style("fill", function(d){
-//             return choropleth(d, colorScale);
-//         });
-//
-//       //annotate bars with attribute value text
-//       var numbers = chart.selectAll(".numbers")
-//           .data(csvData)
-//           .enter()
-//           .append("text")
-//           .sort(function(a, b){
-//               return a[expressed]-b[expressed]
-//           })
-//           .attr("class", function(d){
-//               return "numbers " + d.FIPS;
-//           })
-//           .attr("text-anchor", "middle")
-//           .attr("x", function(d, i){
-//               var fraction = chartWidth / csvData.length;
-//               return i * fraction + (fraction - 1) / 2;
-//           })
-//           .attr("y", function(d){
-//               return chartHeight - yScale(parseFloat(d[expressed])) + 15;
-//           })
-//           .text(function(d){
-//               return d[expressed];
-//           });
-//
-//       //adds a title to our chart
-//       var chartTitle = chart.append("text")
-//            .attr("x", 20)
-//            .attr("y", 40)
-//            .attr("class", "chartTitle")
-//            .text("Number of Convenience Stores " + expressed[2] + " in Each County");
-//
-//       //create vertical axis generator
-//       var yAxis = d3.svg.axis()
-//              .scale(yScale)
-//              .orient("left");
-//
-//       //place axis
-//       var axis = chart.append("g")
-//              .attr("class", "axis")
-//              .attr("transform", translate)
-//              .call(yAxis);
-//
-//       //create frame for chart border
-//       var chartFrame = chart.append("rect")
-//              .attr("class", "chartFrame")
-//              .attr("width", chartInnerWidth)
-//              .attr("height", chartInnerHeight)
-//              .attr("transform", translate);
-// };
 
 //function to create coordinated bar chart
 function setChart(csvData, colorScale){
@@ -233,13 +145,11 @@ function setChart(csvData, colorScale){
         .sort(function(a, b){
             return b[expressed]-a[expressed]
         })
+        .attr("class", "bar")
         .attr("class", function(d){
-            return "bar " + d.GEOID;
+            return "counties_" + d.GEOID;
         })
-        .attr("width", chartInnerWidth / (csvData.length - 1))
-        .on("mouseover", highlight)
-        .on("mouseout", dehighlight);
-
+        .attr("width", chartInnerWidth / (csvData.length - 1));
 
         var desc = bars.append("desc")
             .text('{"stroke": "none", "stroke-width": "0px"}');
@@ -249,7 +159,7 @@ function setChart(csvData, colorScale){
         .attr("x", 40)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Number of " + expressed + " per County");
+        .text("Number of " + expressed + " per 1,000 People");
 
     //create vertical axis generator
     var yAxis = d3.svg.axis()
@@ -276,7 +186,7 @@ window.onload = setMap();
 function joinData(usCounties, csvData){
 
     //variables for data join
-    var attrArray = ["groceryStores", "supercenters", "convenienceStores", "lowAccess", "nocarAccess", "fastFood"];
+    var attrArray = ["Grocery Stores","Supercenters","Convenience Stores","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores","Fast Food Restaurants"];
 
     //loop through csv to assign each set of csv attribute values to geojson region
     for (var i=0; i<csvData.length; i++){
@@ -306,11 +216,11 @@ return usCounties;
 //function to create color scale generator
 function makeColorScale(data){
     var colorClasses = [
-        "#D4B9DA",
-        "#C994C7",
-        "#DF65B0",
-        "#DD1C77",
-        "#980043"
+        "#ffffb2",
+        "#fecc5c",
+        "#fd8d3c",
+        "#f03b20",
+        "#bd0026"
     ];
 
     //create color scale generator
@@ -418,7 +328,7 @@ function updateChart(bars, n, colorScale){
         })
         //size/resize bars
         .attr("height", function(d, i){
-            return 473 - yScale(parseFloat(d[expressed]));
+            return 463 - yScale(parseFloat(d[expressed]));
         })
         .attr("y", function(d, i){
             return yScale(parseFloat(d[expressed])) + topBottomPadding;
@@ -428,24 +338,24 @@ function updateChart(bars, n, colorScale){
             return choropleth(d, colorScale);
         });
 
-        //at the bottom of updateChart()...add text to chart title
+    //at the bottom of updateChart()...add text to chart title
     var chartTitle = d3.select(".chartTitle")
-        .text("Number of Variable " + expressed[3] + " in each region");
+        .text("Number of " + expressed + " per 1,000 People");
 };
 
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll("." + props.GEOID)
+    var selected = d3.selectAll(".counties_" + props.GEOID)
         .style({
-            "stroke": "blue",
+            "stroke": "yellow",
             "stroke-width": "2"
         });
 };
 
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll("." + props.GEOID)
+    var selected = d3.selectAll(".counties_" + props.GEOID)
         .style({
             "stroke": function(){
                 return getStyle(this, "stroke")
@@ -464,7 +374,30 @@ function dehighlight(props){
 
         return styleObject[styleName];
     };
+    d3.select(".infolabel")
+        .remove();
 };
+
+//function to create dynamic label
+function setLabel(props){
+    //label content
+    var labelAttribute = "<h1>" + props[expressed] +
+        "</h1><b>" + expressed + "</b>";
+
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr({
+            "class": "infolabel",
+            "id": props.FIPS + "_label"
+        })
+        .html(labelAttribute);
+
+    var countyName = infolabel.append("div")
+        .attr("class", "labelname")
+        .html(props.County);
+};
+
 
 
 })();
