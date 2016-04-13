@@ -1,7 +1,7 @@
 //wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 
-//variables for data join
+//pseudo-global variables
 var attrArray = ["Grocery Stores","Supercenters","Convenience Stores","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores","Fast Food Restaurants"];
 var expressed = attrArray[0]; //initial attribute
 
@@ -15,7 +15,7 @@ var chartWidth = window.innerWidth * 0.480,
     chartInnerHeight = chartHeight - topBottomPadding * 2,
     translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
-//create a scale to size bars proportionally to frame and for axis
+//creates a scale to size bars proportionally to frame and for axis
 var yScale = d3.scale.linear()
     .range([460, 0])
     .domain([0, 8]);
@@ -41,30 +41,32 @@ function setMap(){
         .scale(770)
         .translate([width / 2, height / 2])
 
+    //creates a path generator
     var path = d3.geo.path()
         .projection(projection);
 
-    //use queue.js to parallelize asynchronous data loading
+    //use queue.js to data loading asynchronously
     d3_queue.queue()
         .defer(d3.csv, "data/FoodData.csv") //load attributes from csv
         .defer(d3.json, "data/Counties.topojson") //load choropleth spatial data
         .await(callback);
 
+    //function that calls our data
     function callback(error, csvData, us){
         //translate the Counties topojson
         var usa = topojson.feature(us, us.objects.Counties),
             usCounties = usa.features;
 
-        //add out usCounties to the map
+        //add our usCounties to the map
         var counties = map.append("path")
           .datum(usa)
           .attr("class", "counties")
           .attr("d", path);
 
-        //join csv data to GeoJson enumeration units
+        //join csv food data to GeoJson enumeration units
         usCounties = joinData(usCounties, csvData);
 
-        //create the color scale
+        //creates the color scale
         var colorScale = makeColorScale(csvData);
 
         //add enumeration units to the map
@@ -163,6 +165,24 @@ function setChart(csvData, colorScale){
     var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left");
+        //.domain(function() {
+//     if (expressed = "Freshwater") {
+//         return([0, 16]);
+//     }
+//     else if (expressed = "Copper") {
+//         return([0, 0.33]);
+//     }
+//     else if (expressed = "Gold") {
+//         return([0, 0.07]);
+//     }
+//     else if (expressed = "Timber") {
+//         return([0, 140]);
+//     }
+//     else if (expressed = "Natural Gas") {
+//         return([0, 185]);
+//     }
+//     else {return([0, 16]);}
+// });
 
     //place axis
     var axis = chart.append("g")
@@ -176,15 +196,16 @@ function setChart(csvData, colorScale){
         .attr("width", chartInnerWidth)
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
+
+    updateChart(bars, csvData.length, colorScale);
+
 };
 
 //begin script when window loads
 window.onload = setMap();
 
+//function to join the data from the csv with the counties
 function joinData(usCounties, csvData){
-
-    //variables for data join
-    var attrArray = ["Grocery Stores","Supercenters","Convenience Stores","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores","Fast Food Restaurants"];
 
     //loop through csv to assign each set of csv attribute values to geojson region
     for (var i=0; i<csvData.length; i++){
@@ -262,7 +283,7 @@ function createDropdown(csvData){
         .text(function(d){ return d });
 };
 
-//dropdown change listener handler
+//function for dropdown change listener handler
 function changeAttribute(attribute, csvData){
     //change the expressed attribute
     expressed = attribute;
@@ -303,7 +324,7 @@ function updateChart(bars, n, colorScale){
             return choropleth(d, colorScale);
         });
 
-    //at the bottom of updateChart()...add text to chart title
+    //adds text to the chart
     var chartTitle = d3.select(".chartTitle")
         .text("Number of " + expressed + " per 1,000 People");
 };
@@ -313,9 +334,10 @@ function highlight(props){
     //change stroke
     var selected = d3.selectAll("#counties_" + props.GEOID)
         .style({
-            "stroke": "yellow",
+            "stroke": "black",
             "stroke-width": "2"
         });
+    setLabel(props);
 };
 
 //function to reset the element style on mouseout
@@ -346,9 +368,8 @@ function dehighlight(props){
 //function to create dynamic label
 function setLabel(props){
     //label content
-    console.log("setLabel")
-    var labelAttribute = "<h1>" + props[expressed] +
-        "</h1><b>" + expressed + "</b>";
+    var labelAttribute = "<h2>" + expressed + ": " + props[expressed] +
+        "</h2>";
 
     //create info label div
     var infolabel = d3.select("body")
@@ -361,16 +382,27 @@ function setLabel(props){
 
     var countyName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.FIPS);
+        .html(props.County);
 };
 
 //function to move info label with mouse
-function moveLabel(d){
-    var props = d.properties
-    setLabel(props)
+function moveLabel(){
+    //get width of label
+    var labelWidth = d3.select(".infolabel")
+        .node()
+        .getBoundingClientRect()
+        .width;
+
     //use coordinates of mousemove event to set label coordinates
-    var x = d3.event.clientX + 10,
-        y = d3.event.clientY - 75;
+    var x1 = d3.event.clientX + 10,
+        y1 = d3.event.clientY - 75,
+        x2 = d3.event.clientX - labelWidth - 10,
+        y2 = d3.event.clientY + 25;
+
+    //horizontal label coordinate, testing for overflow
+    var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+    //vertical label coordinate, testing for overflow
+    var y = d3.event.clientY < 75 ? y2 : y1;
 
     d3.select(".infolabel")
         .style({
