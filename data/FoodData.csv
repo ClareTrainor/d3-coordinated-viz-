@@ -1,4 +1,4 @@
-ID,FIPS,State,County,Grocery Stores,Supercenters,Convenience Stores,People with Low Access to Stores (%),People with No Car Access to Grocery Stores,Fast Food Restaurants
+ID,FIPS,State,County,Grocery Stores per 1000 People,Supercenters per 1000 People,Convenience Stores per 1000 People,People with Low Access to Stores (%),People with No Car Access to Grocery Stores (%),Fast Food Restaurants per 1000 People
 1,01001,AL,Autauga,0.072053896,0.018013474,0.612458119,33.7696573,3.284785556,0.612458119
 2,01003,AL,Baldwin,0.136275486,0.031448189,0.566067404,19.3184726,2.14782716,0.681377431
 3,01005,AL,Barbour,0.183816771,0.036763354,0.698503731,20.84097171,4.135869371,0.77203044

@@ -2,7 +2,7 @@
 (function(){
 
 //pseudo-global variables
-var attrArray = ["Grocery Stores","Supercenters","Convenience Stores","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores","Fast Food Restaurants"];
+var attrArray = ["Grocery Stores per 1000 People","Supercenters per 1000 People","Convenience Stores per 1000 People","People with Low Access to Stores (%)","People with No Car Access to Grocery Stores (%)","Fast Food Restaurants per 1000 People"];
 var expressed = attrArray[0]; //initial attribute
 
 //chart frame dimensions
@@ -17,8 +17,27 @@ var chartWidth = window.innerWidth * 0.480,
 
 //creates a scale to size bars proportionally to frame and for axis
 var yScale = d3.scale.linear()
-    .range([460, 0])
-    .domain([0, 8]);
+    .range([475, 0])
+    .domain([0, 3])
+    // .attr( function scales(expressed){
+    //   if (expressed = "Supercenters") {
+    //     return([0, 16]);
+    //   }
+    //   else if (expressed = "Convenience Stores") {
+    //     return([0, 0.33])
+    //   }
+    //   else if (expressed = "People with Low Access to Stores (%)") {
+    //     return([0, 0.07]);
+    //   }
+    //   else if (expressed = "People with No Car Access to Grocery Stores") {
+    //     return([0, 140]);
+    //   }
+    //   else if (expressed = "Fast Food Restaurants") {
+    //     return([0, 185]);
+    //   }
+    //   else {return([0, 16]);
+    //   }
+    // });
 
 //set up choropleth map
 function setMap(){
@@ -159,30 +178,12 @@ function setChart(csvData, colorScale){
         .attr("x", 40)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Number of " + expressed + " per 1,000 People");
+        .text(expressed);
 
     //create vertical axis generator
     var yAxis = d3.svg.axis()
         .scale(yScale)
-        .orient("left");
-        //.domain(function() {
-//     if (expressed = "Freshwater") {
-//         return([0, 16]);
-//     }
-//     else if (expressed = "Copper") {
-//         return([0, 0.33]);
-//     }
-//     else if (expressed = "Gold") {
-//         return([0, 0.07]);
-//     }
-//     else if (expressed = "Timber") {
-//         return([0, 140]);
-//     }
-//     else if (expressed = "Natural Gas") {
-//         return([0, 185]);
-//     }
-//     else {return([0, 16]);}
-// });
+        .orient("left")
 
     //place axis
     var axis = chart.append("g")
@@ -252,6 +253,7 @@ function makeColorScale(data){
         var val = parseFloat(data[i][expressed]);
         domainArray.push(val);
     };
+
     //assign array of expressed values as scale domain
     colorScale.domain(domainArray);
 
@@ -326,7 +328,7 @@ function updateChart(bars, n, colorScale){
 
     //adds text to the chart
     var chartTitle = d3.select(".chartTitle")
-        .text("Number of " + expressed + " per 1,000 People");
+        .text(expressed);
 };
 
 //function to highlight enumeration units and bars
