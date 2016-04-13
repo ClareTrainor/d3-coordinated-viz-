@@ -87,7 +87,7 @@ function setEnumerationUnits(usCounties, map, path, colorScale){
             .enter()
             .append("path")
             .attr("class", "counties")
-            .attr("class", function(d){
+            .attr("id", function(d){
                 return "counties_" + d.properties.GEOID;
             })
             .attr("d", path)
@@ -95,17 +95,15 @@ function setEnumerationUnits(usCounties, map, path, colorScale){
                 return choropleth(d.properties, colorScale);
             })
             .on("mouseover", function(d){
-              console.log(d)
-              console.log(this)
                 highlight(d.properties);
             })
             .on("mouseout", function(d){
-            dehighlight(d.properties);
-            });
+            dehighlight(d.properties)
+            })
+            .on("mousemove", moveLabel);
 
             var desc = counties.append("desc")
             .text('{"stroke": "#000", "stroke-width": "0.5px"}');
-
 };
 
 //function to test for data value and return color
@@ -146,7 +144,7 @@ function setChart(csvData, colorScale){
             return b[expressed]-a[expressed]
         })
         .attr("class", "bar")
-        .attr("class", function(d){
+        .attr("id", function(d){
             return "counties_" + d.GEOID;
         })
         .attr("width", chartInnerWidth / (csvData.length - 1));
@@ -233,43 +231,10 @@ function makeColorScale(data){
         var val = parseFloat(data[i][expressed]);
         domainArray.push(val);
     };
-
     //assign array of expressed values as scale domain
     colorScale.domain(domainArray);
 
     return colorScale;
-
-
-    //build two-value array of minimum and maximum expressed attribute values
-    // var minmax = [
-    //   d3.min(data, function(d) { return parseFloat(d[expressed]); }),
-    //   d3.max(data, function(d) { return parseFloat(d[expressed]); })
-    // ];
-    //
-    // //assign two-value array as scale domain
-    // colorScale.domain(minmax);
-    //
-    // return colorScale;
-
-    //build array of all values of the expressed attribute
-    // var domainArray = [];
-    // for (var i=0; i<data.length; i++){
-    //     var val = parseFloat(data[i][expressed]);
-    //     domainArray.push(val);
-    // };
-    //
-    // //cluster data using ckmeans clustering algorithm to create natural breaks
-    // var clusters = ss.ckmeans(domainArray, 5);
-    // //reset domain array to cluster minimums
-    // domainArray = clusters.map(function(d){
-    //     return d3.min(d);
-    // });
-    // //remove first value from domain array to create class breakpoints
-    // domainArray.shift();
-    // //assign array of last 4 cluster minimums as domain
-    // colorScale.domain(domainArray);
-    //
-    // return colorScale;
 };
 
 //function to create a dropdown menu for attribute selection
@@ -346,7 +311,7 @@ function updateChart(bars, n, colorScale){
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll(".counties_" + props.GEOID)
+    var selected = d3.selectAll("#counties_" + props.GEOID)
         .style({
             "stroke": "yellow",
             "stroke-width": "2"
@@ -355,7 +320,7 @@ function highlight(props){
 
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll(".counties_" + props.GEOID)
+    var selected = d3.selectAll("#counties_" + props.GEOID)
         .style({
             "stroke": function(){
                 return getStyle(this, "stroke")
@@ -381,6 +346,7 @@ function dehighlight(props){
 //function to create dynamic label
 function setLabel(props){
     //label content
+    console.log("setLabel")
     var labelAttribute = "<h1>" + props[expressed] +
         "</h1><b>" + expressed + "</b>";
 
@@ -389,15 +355,28 @@ function setLabel(props){
         .append("div")
         .attr({
             "class": "infolabel",
-            "id": props.FIPS + "_label"
+            "id": props.GEOID + "_label"
         })
         .html(labelAttribute);
 
     var countyName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.County);
+        .html(props.FIPS);
 };
 
+//function to move info label with mouse
+function moveLabel(d){
+    var props = d.properties
+    setLabel(props)
+    //use coordinates of mousemove event to set label coordinates
+    var x = d3.event.clientX + 10,
+        y = d3.event.clientY - 75;
 
+    d3.select(".infolabel")
+        .style({
+            "left": x + "px",
+            "top": y + "px"
+        });
+};
 
 })();
